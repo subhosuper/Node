@@ -1,0 +1,20 @@
+{
+  "name": "asynchronous",
+  "version": "1.0.0",
+  "description": "asynchronous request handling",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon index.js"
+  },
+  "author": "Subham Garai",
+  "license": "ISC",
+  "keywords": [
+    "asyn"
+  ],
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "dependencies": {
+    "superagent": "^7.1.1"
+  }
+}
