@@ -19,6 +19,20 @@ var tours = JSON.parse(
 //     next();
 // }
 
+exports.checkBody = (req, res, next) => {
+    console.log("This middleware works ", req.body);
+    if (Object.keys(req.body).length === 0 && req.body.constructor === Object) {
+        return res
+                .status(400)
+                .json({
+                    message: "Request contains no body",
+                    status: "error"
+            })
+    }
+    next();
+}
+
+
 exports.getAllTours = (req, res)=>{
     res.status(200).json({
         results: tours.length,
