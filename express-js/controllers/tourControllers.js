@@ -40,8 +40,25 @@ exports.getAllTours = async (req, res)=>{
     //     requestTime: req.requestTime,
     //     status: "success"
     // });
+    const queryObj = {...req.query} //creating a shallow copy
+    const excludeFields = ['limit', "sort", "page"];
+    excludeFields.forEach(el => delete queryObj[el]);
+    // console.log(req.query, " ", queryObj);
+
+    let queryString = JSON.stringify(queryObj);
+    queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+    // console.log(queryString)
+    queryString = JSON.parse(queryString);
+    // console.log(queryString);
+
     try{
-        const tours = await Tour.find();
+        const tours = await Tour.find(queryString);
+        // const tours = await Tour.find()
+        //                         .where('duration')
+        //                         .equals(5)
+        //                         .where('difficulty')
+        //                         .equals('easy');
+
         res
             .status(200)
             .json({
@@ -89,6 +106,7 @@ exports.newTour = async (req, res)=>{
             })
     }
     catch(err){
+        console.log(err);
         res
             .status(400)
             .json({
@@ -136,7 +154,7 @@ exports.getTour = async (req, res)=>{
     }
 }
 
-exports.updateTour = (req, res)=>{
+exports.updateTour = async (req, res)=> {
     // const id = parseInt(req.params.id); // req.params.id * 1 => Int(id) as any * some number = number
     // const indexTour = tours.findIndex(el => el.id === id);
 
@@ -158,28 +176,72 @@ exports.updateTour = (req, res)=>{
     //        data: newTour
     //    });
     // })
+    try{
+        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+            new: true //to return new document after updating
+        });
+
+        res
+        .status(200)
+        .json({
+            status: "success",
+            data:{
+                tour
+            }
+        });
+    } catch(err){
+        console.log(err)
+        res
+           .status(500)
+           .json({
+               status: "fail",
+               message: err
+           })
+    }
 }
 
-exports.deleteTour = (req, res)=>{
-    const id = parseInt(req.params.id); // req.params.id * 1 => Int(id) as any * some number = number
-    const indexTour = tours.findIndex(el => el.id === id);
+exports.deleteTour = async (req, res)=>{
+    // const id = parseInt(req.params.id); // req.params.id * 1 => Int(id) as any * some number = number
+    // const indexTour = tours.findIndex(el => el.id === id);
 
-    if (indexTour === -1){
-        return res
-                  .status(404)
-                  .json({
-                      status: "fail",
-                      message: "Invalid ID"
-                  });
-    }
-    const newTour = tours;
-    newTour.splice(indexTour, 1);
-    fs.writeFile(`${__dirname}/../dev-data/data/tours-simple.json`, JSON.stringify(newTour), err=>{
+    // if (indexTour === -1){
+    //     return res
+    //               .status(404)
+    //               .json({
+    //                   status: "fail",
+    //                   message: "Invalid ID"
+    //               });
+    // }
+    // const newTour = tours;
+    // newTour.splice(indexTour, 1);
+    // fs.writeFile(`${__dirname}/../dev-data/data/tours-simple.json`, JSON.stringify(newTour), err=>{
+    //     res
+    //    .status(204)
+    //    .json({
+    //        status: "success",
+    //        data: null
+    //    });
+    // });
+    try{
+        const tour = await Tour.findByIdAndRemove(req.params.id, {
+            new: true
+        });
+        
         res
-       .status(204)
-       .json({
-           status: "success",
-           data: null
-       });
-    });
+            .status(204)
+            .json({
+                status: "success",
+                message: "resource deleted"
+            });
+    }
+    catch(err){
+        console.log(err)
+        res
+            .status(500)
+            .json({
+                status: "fail",
+                message: err
+            })
+    }
+    
 }
