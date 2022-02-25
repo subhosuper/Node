@@ -6,7 +6,7 @@ const tourSchema = new mongoose.Schema({
         required: [true, "A tour should have a name"],
         unique: true
     },
-    ratingAverage: {
+    ratingsAverage: {
         type: Number,
         default: 4.5
     },
@@ -43,7 +43,8 @@ const tourSchema = new mongoose.Schema({
     images: [String],
     createdAt: {
         type: Date,
-        default: Date.now()
+        default: Date.now(),
+        select: false ///hides attribute permanently
     },
     startDates: [Date]
 });

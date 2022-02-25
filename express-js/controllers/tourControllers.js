@@ -49,10 +49,42 @@ exports.getAllTours = async (req, res)=>{
     queryString = queryString.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
     // console.log(queryString)
     queryString = JSON.parse(queryString);
-    // console.log(queryString);
+    console.log(queryString);
 
     try{
-        const tours = await Tour.find(queryString);
+        let query = Tour.find(queryString);
+        if (req.query.sort){
+            const sortBy = req.query.sort.split(',').join(' ');
+            query = query.sort(sortBy);
+        }
+        else{
+            query = query.sort("-createdAt")
+        }
+
+        if (req.query.fields){
+            const fields = req.query.fields.split(',').join(' ');
+            console.log(req.query.fields)
+            query = query.select(fields);
+        }
+        else{
+            query = query.select("-__v");
+        }
+
+        const page = req.query.page * 1 || 1;
+        const limit = req.query.limit * 1 || 100;
+        const skip = (page - 1) * limit;
+        query = query.skip(skip).limit(limit);
+        if(req.query.page){
+            const countPages = await Tour.countDocuments();
+            if (skip >= countPages){
+                throw new Error('The page does not exist');
+            }
+        }
+        else{
+            query = query.skip(0).limit(100);
+        }
+
+        const tours = await query;
         // const tours = await Tour.find()
         //                         .where('duration')
         //                         .equals(5)
@@ -74,7 +106,7 @@ exports.getAllTours = async (req, res)=>{
             .status(400)
             .json({
                 status: "fail",
-                message: "Error occured in data retrieval"
+                message: JSON.parse(err)
             })
     }
 }
