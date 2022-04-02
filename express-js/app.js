@@ -16,4 +16,25 @@ app.use((req, res, next)=>{
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 
+app.all('*', (req, res, next)=>{           //Operational error handling with arong routes to application (localhost)
+    res
+        .status(404)
+        .json({
+            status: "fail",
+            message: `Can't find route ${req.originalUrl}`
+        });
+});
+
+app.use((err, req, res, next)=>{
+    err.statusCode = err.statusCode || 500;
+    err.status = err.status || "error";
+    err.message = err.message || "Something went wrong";
+    res
+        .status(err.statusCode)
+        .json({
+            status: err.statusCode,
+            message: err.message
+        });
+});
+
 module.exports = app;
